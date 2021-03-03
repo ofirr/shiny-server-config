@@ -1,0 +1,32 @@
+version: "3.2"
+
+services:
+  nginx: 
+    image: nginx:latest    
+    restart: unless-stopped
+    volumes: 
+      - ./config/nginx.conf:/etc/nginx/nginx.conf
+      - ./config/nginx.shiny-server.conf:/etc/nginx/sites-available/shiny-server.conf      
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - shiny-network
+
+  shiny:
+    image: shiny-server:fixed  
+    restart: unless-stopped
+    ports: 
+      - "3838:3838"
+    volumes:
+      - ./config/shiny-server.conf:/etc/shiny-server/shiny-server.conf
+      - /home/shiny/logs:/var/log/shiny-server/:rw
+      - /home/shiny/apps:/srv/shiny-server/apps:rw    
+    build:
+      context: ./shiny-server      
+    networks:
+      - shiny-network
+
+networks:
+  shiny-network:
+    driver: bridge
