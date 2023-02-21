@@ -40,7 +40,7 @@ RUN apt-get update \
     unixodbc-dev
 
 # Install R packages
-RUN echo "options(repos = c(CRAN = 'https://cran.rstudio.com/'), download.file.method = 'libcurl')" >> /usr/local/lib/R/etc/Rprofile.site
+RUN echo "options(repos = c(CRAN = 'https://cran.rstudio.com/'), download.file.method = 'libcurl', Ncpus = 40)" >> /usr/local/lib/R/etc/Rprofile.site
 RUN R -e 'install.packages("remotes")'
 
 RUN install2.r --error \
@@ -84,16 +84,97 @@ RUN install2.r --error \
     geoR \
     geosphere \
     tgstat \
+    promises \
+    future \
+    anndata \
+    attempt \
+    chameleon \
+    cli \
+    colourpicker \
+    circlize \
+    config \
+    cowplot \
+    dplyr \
+    DT \
+    forcats \
+    fs \
+    furrr \
+    future \
+    ggnewscale \
+    ggplot2 \
+    ggrepel \
+    grDevices \
+    glue \
+    golem \
+    htmltools \
+    markdown \
+    matrixStats \
+    pkgload \
+    plotly \
+    processx \
+    promises \
+    purrr \
+    pryr \
+    qs \
+    rintrojs \
+    rlang \
+    rmarkdown \
+    scales \
+    shiny \
+    shinyjs \
+    shinycssloaders \
+    shinydashboard \
+    shinydashboardPlus \
+    shinyEffects \
+    shinyWidgets \
+    shinybusy \
+    tgstat \
+    tibble \
+    tidyr \
+    vctrs \
+    viridis \
+    yaml \
+    zip \
+    RColorBrewer \
+    RandomFields \
+    RNetCDF \
+    classInt \
+    deldir \
+    gstat \
+    hdf5r \
+    lidR \
+    mapdata \
+    maptools \
+    mapview \
+    ncdf4 \
+    proj4 \
+    raster \
+    rgdal \
+    rgeos \
+    rlas \
+    sf \
+    sp \
+    spacetime \
+    spatstat \
+    spdep \
+    geoR \
+    geosphere \
+    bslib \
     ## from bioconductor
     && R -e "BiocManager::install('rhdf5', update=FALSE, ask=FALSE)"
 
-RUN Rscript -e 'remotes::install_github("r-lib/cachem")'
-RUN Rscript -e 'remotes::install_github("rstudio/bslib")'
 RUN Rscript -e 'remotes::install_github("tanaylab/tgutil")'
+RUN Rscript -e 'remotes::install_github("tanaylab/tglkmeans")'
+RUN Rscript -e 'remotes::install_github("tanaylab/MCView")'
 RUN Rscript -e 'remotes::install_github("tanaylab/tgconfig")'
 
-# Configure
 
+RUN install2.r --error \
+    pryr \
+    gplots \
+    magicaxis
+
+# Configure
 EXPOSE 3838
 
 WORKDIR /home/

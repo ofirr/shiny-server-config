@@ -1,4 +1,4 @@
 #!/bin/bash
 
 # starting server
-sudo docker-compose up -d
+sudo docker-compose --compatibility up -d
