@@ -1,73 +1,33 @@
-version: "3.2"
+version: "3.7"
 
 services:
-  shiny:    
-    image: shiny-server:fixed-20.10.21
+  nginx: 
+    image: nginx:latest    
+    restart: unless-stopped
+    volumes: 
+      - ./config/nginx.conf:/etc/nginx/nginx.conf     
+    ports:
+      - "80:80"
+      - "443:443" 
+    networks:
+      - shiny-network
+
+  shiny:
+    image: shiny-server:fixed-6.2.23  
     restart: unless-stopped
     ports: 
-      - "3838"
+      - "3838:3838"
     volumes:
       - ./config/shiny-server.conf:/etc/shiny-server/shiny-server.conf
       - /home/shiny/logs:/var/log/shiny-server/:rw
-      - /home/shiny/apps:/srv/shiny-server/apps:rw    
-      - /home/shiny/app_cache:/app_cache:rw  
+      - /home/shiny/apps:/srv/shiny-server/apps:rw
+      - /home/shiny/app_cache:/app_cache:rw
     build:
-      context: ./shiny-server 
+      context: ./shiny-server   
     command: ["/home/run_server.sh"]
-    labels:
-      traefik.enable: true      
-      traefik.docker.network: shiny-network            
-      traefik.http.routers.shiny.rule: Host(`PUBLIC_ADDRESS`)
-      traefik.http.routers.shiny.tls: true      
-      traefik.http.services.shiny.loadbalancer.server.port: 3838 
-      traefik.http.services.shiny.loadbalancer.sticky: true
-      traefik.http.services.shiny.loadbalancer.sticky.cookie.name: StickyCookie
-      traefik.http.services.shiny.loadbalancer.sticky.cookie.secure: false
-      traefik.http.services.shiny.loadbalancer.sticky.cookie.httpOnly: true     
-      traefik.http.middlewares.testheader.headers.accesscontrolalloworiginlist: "*"      
-      traefik.http.routers.shiny.middlewares: testheader
-    deploy:
-      replicas: 5     
-    depends_on:
-      - lb    
     networks:
       - shiny-network
-
-  lb:    
-    image: traefik:2.5.2 # The official Traefik docker image        
-    command: 
-    - --api 
-    - --providers.docker  
-    - --accesslog 
-    - --log 
-    - --providers.file.directory=/ssl/
-    - --providers.file.watch=true    
-    - --entrypoints.web.address=:80
-    - --entrypoints.web-secure.address=:443
-    - --entrypoints.web-secure.transport.respondingTimeouts.readTimeout=900
-    - --entrypoints.web-secure.transport.respondingTimeouts.writeTimeout=900
-    - --entrypoints.web-secure.transport.respondingTimeouts.idleTimeout=900    
-    ports:
-      - "80:80" # The HTTP port
-      - "443:443"
-      - "3939:8080" # The Web UI (enabled by --api)
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro # listen to the Docker events
-      - ./ssl:/ssl/
-    labels:
-      # global redirect to https
-      - "traefik.http.routers.http-catchall.rule=hostregexp(`{host:.+}`)"
-      - "traefik.http.routers.http-catchall.entrypoints=web"
-      - "traefik.http.routers.http-catchall.middlewares=redirect-to-https"
-
-      # middleware redirect
-      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
-      - "traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true"
-      
-    networks:
-      - shiny-network
-
-
+  
 networks:
   shiny-network:
     driver: bridge
